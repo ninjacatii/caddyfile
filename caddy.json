@@ -1,0 +1,107 @@
+{
+  "apps": {
+    "http": {
+      "servers": {
+        "srv0": {
+          "listen": [
+            ":443"
+          ],
+          "logs": {
+            "logger_names": {
+              "x.lightvpn.cloudns.biz": "log0"
+            }
+          },
+          "routes": [
+            {
+              "handle": [
+                {
+                  "handler": "subroute",
+                  "routes": [
+                    {
+                      "handle": [
+                        {
+                          "handler": "reverse_proxy",
+                          "upstreams": [
+                            {
+                              "dial": "localhost:7001"
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ],
+              "match": [
+                {
+                  "host": [
+                    "x.lightvpn.cloudns.biz"
+                  ]
+                }
+              ],
+              "terminal": true
+            }
+          ],
+          "tls_connection_policies": [
+            {
+              "cipher_suites": [
+                "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384",
+                "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256"
+              ],
+              "curves": [
+                "x25519"
+              ],
+              "match": {
+                "sni": [
+                  "x.lightvpn.cloudns.biz"
+                ]
+              },
+              "protocol_max": "tls1.3",
+              "protocol_min": "tls1.2"
+            },
+            {}
+          ]
+        }
+      }
+    },
+    "tls": {
+      "automation": {
+        "policies": [
+          {
+            "issuers": [
+              {
+                "email": "admin@demo.com",
+                "module": "acme"
+              },
+              {
+                "email": "admin@demo.com",
+                "module": "zerossl"
+              }
+            ],
+            "subjects": [
+              "x.lightvpn.cloudns.biz"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "logging": {
+    "logs": {
+      "default": {
+        "exclude": [
+          "http.log.access.log0"
+        ]
+      },
+      "log0": {
+        "include": [
+          "http.log.access.log0"
+        ],
+        "writer": {
+          "filename": "/srv/caddy.log",
+          "output": "file"
+        }
+      }
+    }
+  }
+}
